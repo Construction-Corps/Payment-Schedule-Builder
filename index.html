@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic Form</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cleave.js/1.6.0/cleave.min.js"></script>
     <style>
         .form-row {
             margin-bottom: 10px;
@@ -17,7 +18,7 @@
         <form id="paymentForm">
             <div class="form-group">
                 <label for="totalAmount">Total Amount</label>
-                <input type="number" class="form-control" id="totalAmount" placeholder="Enter total amount" required>
+                <input type="text" class="form-control" id="totalAmount" placeholder="Enter total amount" required>
             </div>
             <div id="rowsContainer">
                 <div class="form-row">
@@ -107,7 +108,8 @@
             }
 
             function calculatePayments() {
-                const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+                const totalAmountStr = document.getElementById('totalAmount').value;
+                const totalAmount = parseFloat(totalAmountStr.replace(/[$,]/g, ''));
                 const rows = rowsContainer.querySelectorAll('.form-row');
                 let outputHtml = '';
 
@@ -131,6 +133,15 @@
 
                 output.innerHTML = outputHtml;
             }
+
+            // Initialize Cleave.js for currency formatting
+            new Cleave('#totalAmount', {
+                numeral: true,
+                numeralThousandsGroupStyle: 'thousand',
+                prefix: '$',
+                numeralDecimalScale: 2,
+                numeralPositiveOnly: true
+            });
         });
     </script>
 </body>
