@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Form</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-row {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Payment Breakdown</h2>
+        <form id="paymentForm">
+            <div class="form-group">
+                <label for="totalAmount">Total Amount</label>
+                <input type="number" class="form-control" id="totalAmount" placeholder="Enter total amount" required>
+            </div>
+            <div id="rowsContainer">
+                <div class="form-row">
+                    <div class="col">
+                        <input type="text" class="form-control" value="Deposit" disabled>
+                    </div>
+                    <div class="col">
+                        <input type="number" class="form-control" placeholder="Percentage" required>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-success add-row">+</button>
+                    </div>
+                </div>
+            </div>
+            <div id="totalPercentage" class="mt-2"></div>
+            <button type="submit" class="btn btn-primary mt-3">Calculate</button>
+        </form>
+        <div id="output" class="mt-4"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const rowsContainer = document.getElementById('rowsContainer');
+            const paymentForm = document.getElementById('paymentForm');
+            const output = document.getElementById('output');
+            const totalPercentageDisplay = document.getElementById('totalPercentage');
+
+            paymentForm.addEventListener('click', function(event) {
+                if (event.target.classList.contains('add-row')) {
+                    addRow();
+                } else if (event.target.classList.contains('remove-row')) {
+                    event.target.closest('.form-row').remove();
+                    adjustPercentages();
+                }
+            });
+
+            paymentForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                if (validatePercentages()) {
+                    calculatePayments();
+                } else {
+                    alert('The total percentage must equal 100%.');
+                }
+            });
+
+            function addRow() {
+                const newRow = document.createElement('div');
+                newRow.classList.add('form-row');
+                newRow.innerHTML = `
+                    <div class="col">
+                        <input type="text" class="form-control" placeholder="Completion" required>
+                    </div>
+                    <div class="col">
+                        <input type="number" class="form-control" placeholder="Percentage" required>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-danger remove-row">-</button>
+                    </div>
+                `;
+                rowsContainer.appendChild(newRow);
+                newRow.querySelector('input[type="number"]').addEventListener('input', adjustPercentages);
+                adjustPercentages();
+            }
+
+            function adjustPercentages() {
+                const rows = rowsContainer.querySelectorAll('.form-row');
+                let sumPercentages = 0;
+
+                rows.forEach(row => {
+                    const percentageInput = row.querySelector('input[type="number"]');
+                    const percentageValue = parseFloat(percentageInput.value) || 0;
+                    sumPercentages += percentageValue;
+                });
+
+                totalPercentageDisplay.textContent = `Total Percentage: ${sumPercentages}%`;
+            }
+
+            function validatePercentages() {
+                const rows = rowsContainer.querySelectorAll('.form-row');
+                const percentages = Array.from(rows).map(row => parseFloat(row.querySelector('input[type="number"]').value) || 0);
+                const sumPercentages = percentages.reduce((a, b) => a + b, 0);
+                return sumPercentages === 100;
+            }
+
+            function calculatePayments() {
+                const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+                const rows = rowsContainer.querySelectorAll('.form-row');
+                let outputHtml = '';
+
+                rows.forEach((row, index) => {
+                    const nameInput = row.querySelector('input[type="text"]');
+                    const percentageInput = row.querySelector('input[type="number"]');
+                    const name = nameInput.value;
+                    const percentage = parseFloat(percentageInput.value);
+                    const amount = (percentage / 100) * totalAmount;
+
+                    let dueText = '';
+                    if (index === 0) {
+                        dueText = 'Due upon acceptance';
+                    } else if (name.toLowerCase().includes('demo')) {
+                        dueText = 'Due upon demo completion';
+                    } else if (name.toLowerCase().includes('project')) {
+                        dueText = 'Due upon project completion';
+                    } else {
+                        dueText = 'Due upon completion';
+                    }
+
+                    outputHtml += `<p>${percentage}% ${name} = $${amount.toFixed(2)} (${dueText})</p>`;
+                });
+
+                output.innerHTML = outputHtml;
+            }
+        });
+    </script>
+</body>
+</html>
