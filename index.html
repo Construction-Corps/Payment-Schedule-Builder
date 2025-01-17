@@ -45,6 +45,10 @@
             const output = document.getElementById('output');
             const totalPercentageDisplay = document.getElementById('totalPercentage');
 
+            // Add event listener to the first row's percentage input
+            const firstRowPercentageInput = rowsContainer.querySelector('.form-row input[type="number"]');
+            firstRowPercentageInput.addEventListener('input', adjustPercentages);
+
             paymentForm.addEventListener('click', function(event) {
                 if (event.target.classList.contains('add-row')) {
                     addRow();
@@ -68,7 +72,7 @@
                 newRow.classList.add('form-row');
                 newRow.innerHTML = `
                     <div class="col">
-                        <input type="text" class="form-control" placeholder="Completion" required>
+                        <input type="text" class="form-control" placeholder="Phase Name" required>
                     </div>
                     <div class="col">
                         <input type="number" class="form-control" placeholder="Percentage" required>
@@ -110,19 +114,16 @@
                 rows.forEach((row, index) => {
                     const nameInput = row.querySelector('input[type="text"]');
                     const percentageInput = row.querySelector('input[type="number"]');
-                    const name = nameInput.value;
+                    let name = nameInput.value;
                     const percentage = parseFloat(percentageInput.value);
                     const amount = (percentage / 100) * totalAmount;
 
                     let dueText = '';
                     if (index === 0) {
                         dueText = 'Due upon acceptance';
-                    } else if (name.toLowerCase().includes('demo')) {
-                        dueText = 'Due upon demo completion';
-                    } else if (name.toLowerCase().includes('project')) {
-                        dueText = 'Due upon project completion';
                     } else {
-                        dueText = 'Due upon completion';
+                        name += ' complete';
+                        dueText = `Due upon ${nameInput.value.toLowerCase()} completion`;
                     }
 
                     outputHtml += `<p>${percentage}% ${name} = $${amount.toFixed(2)} (${dueText})</p>`;
